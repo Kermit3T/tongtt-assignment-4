@@ -16,26 +16,26 @@ document.addEventListener('DOMContentLoaded', () => {
             // Display results
             resultsDiv.innerHTML = results.map((result, index) => `
                 <div class="document">
-                    <h3>Document ${result.id}</h3>
-                    <p>${result.content}</p>
-                    <p class="similarity-score">Similarity: ${result.score.toFixed(4)}</p>
+                    <h3>Document ${index + 1}</h3>
+                    <p>${result.document}</p>
+                    <p class="similarity-score">Similarity Score: ${result.score.toFixed(4)}</p>
                 </div>
             `).join('');
 
             // Create bar chart
             const data = [{
-                x: results.map(r => `Doc ${r.id}`),
+                x: results.map((_, i) => `Doc ${i + 1}`),
                 y: results.map(r => r.score),
                 type: 'bar',
                 marker: {
-                    color: 'rgba(0, 123, 255, 0.6)'
+                    color: '#007BFF'
                 }
             }];
 
             const layout = {
                 title: 'Document Similarity Scores',
                 xaxis: { title: 'Documents' },
-                yaxis: { title: 'Cosine Similarity', range: [0, 1] },
+                yaxis: { title: 'Cosine Similarity' },
                 font: {
                     family: 'Roboto, sans-serif'
                 },
