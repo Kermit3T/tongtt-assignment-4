@@ -1,0 +1,47 @@
+name: main
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        make install
+    - name: Run application
+      run: |
+        make run &
+        sleep 10
+    - name: Check if application is running
+      run: |
+        curl http://localhost:3000 || exit 1
+
+  test-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        make install
+    - name: Run application
+      run: |
+        start /b make run
+        timeout /t 10 /nobreak
+    - name: Check if application is running
+      run: |
+        curl.exe http://localhost:3000
+        if ($LASTEXITCODE -ne 0) { exit 1 }
