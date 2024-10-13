@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LSA Search Engine</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
 </head>
 <body>
-    <h1>Latent Semantic Analysis (LSA) Search Engine</h1>
-    <form id="search-form">
-        <input type="text" id="query" placeholder="Enter search query" required>
-        <button type="submit">Search</button>
-    </form>
-
-    <div id="results"></div>
-    <canvas id="similarity-chart"></canvas>
-
+    <div class="container">
+        <h1>LSA Search Engine</h1>
+        <form id="search-form">
+            <input type="text" id="query" placeholder="Enter your search query">
+            <button type="submit" id="search-button">Search</button>
+        </form>
+        <div id="results"></div>
+        <div id="chart"></div>
+    </div>
     <script src="/static/main.js"></script>
 </body>
 </html>

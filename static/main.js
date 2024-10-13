@@ -1,42 +1,52 @@
-document.getElementById('search-form').addEventListener('submit', function (event) {
-    event.preventDefault();
-    
-    let query = document.getElementById('query').value;
-    let resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '';
+// static/main.js
+document.addEventListener('DOMContentLoaded', () => {
+    const searchForm = document.getElementById('search-form');
+    const queryInput = document.getElementById('query');
+    const resultsDiv = document.getElementById('results');
+    const chartDiv = document.getElementById('chart');
 
-    fetch('/search', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-            'query': query
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data);
-        displayResults(data);
-        displayChart(data);
+    searchForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const query = queryInput.value;
+
+        try {
+            const response = await axios.post('/search', { query });
+            const results = response.data;
+
+            // Display results
+            resultsDiv.innerHTML = results.map((result, index) => `
+                <div class="document">
+                    <h3>Document ${index + 1}</h3>
+                    <p>${result.document}</p>
+                    <p class="similarity-score">Similarity Score: ${result.score.toFixed(4)}</p>
+                </div>
+            `).join('');
+
+            // Create bar chart
+            const data = [{
+                x: results.map((_, i) => `Doc ${i + 1}`),
+                y: results.map(r => r.score),
+                type: 'bar',
+                marker: {
+                    color: '#007BFF'
+                }
+            }];
+
+            const layout = {
+                title: 'Document Similarity Scores',
+                xaxis: { title: 'Documents' },
+                yaxis: { title: 'Cosine Similarity' },
+                font: {
+                    family: 'Roboto, sans-serif'
+                },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)'
+            };
+
+            Plotly.newPlot(chartDiv, data, layout);
+        } catch (error) {
+            console.error('Error:', error);
+            resultsDiv.innerHTML = '<p>An error occurred while searching.</p>';
+        }
     });
 });
-
-function displayResults(data) {
-    let resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '<h2>Results</h2>';
-    for (let i = 0; i < data.documents.length; i++) {
-        let docDiv = document.createElement('div');
-        docDiv.innerHTML = `<strong>Document ${data.indices[i]}</strong><p>${data.documents[i]}</p><br><strong>Similarity: ${data.similarities[i]}</strong>`;
-        resultsDiv.appendChild(docDiv);
-    }
-}
-
-function displayChart(data) {
-    // Input: data (object) - contains the following keys:
-    //        - documents (list) - list of documents
-    //        - indices (list) - list of indices   
-    //        - similarities (list) - list of similarities
-    // TODO: Implement function to display chart here
-    //       There is a canvas element in the HTML file with the id 'similarity-chart'
-}

@@ -1,3 +1,4 @@
+# app.py
 from flask import Flask, render_template, request, jsonify
 from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -7,22 +8,41 @@ import numpy as np
 import nltk
 from nltk.corpus import stopwords
 
-nltk.download('stopwords')
-
 app = Flask(__name__)
 
+# Download NLTK stopwords
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
 
-# TODO: Fetch dataset, initialize vectorizer and LSA here
+# Load the 20 Newsgroups dataset
+newsgroups = fetch_20newsgroups(subset='all')
+documents = newsgroups.data
 
+# Perform LSA
+vectorizer = TfidfVectorizer(stop_words=list(stop_words), max_features=5000)
+X = vectorizer.fit_transform(documents)
 
-def search_engine(query):
-    """
-    Function to search for top 5 similar documents given a query
-    Input: query (str)
-    Output: documents (list), similarities (list), indices (list)
-    """
-    # TODO: Implement search engine here
-    # return documents, similarities, indices 
+n_components = 100
+svd = TruncatedSVD(n_components=n_components)
+lsa = svd.fit_transform(X)
+
+def perform_search(query):
+    query_vec = vectorizer.transform([query])
+    query_lsa = svd.transform(query_vec)
+    
+    # Calculate cosine similarity
+    similarity = cosine_similarity(lsa, query_lsa).flatten()
+    
+    # Sort documents by similarity
+    sorted_indexes = np.argsort(similarity)[::-1]
+    
+    top_docs = []
+    for idx in sorted_indexes[:5]:
+        doc = documents[idx]
+        score = similarity[idx]
+        top_docs.append({"document": doc[:200] + "...", "score": float(score)})
+    
+    return top_docs
 
 @app.route('/')
 def index():
@@ -30,9 +50,9 @@ def index():
 
 @app.route('/search', methods=['POST'])
 def search():
-    query = request.form['query']
-    documents, similarities, indices = search_engine(query)
-    return jsonify({'documents': documents, 'similarities': similarities, 'indices': indices}) 
+    query = request.json['query']
+    results = perform_search(query)
+    return jsonify(results)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=3000, debug=True)
